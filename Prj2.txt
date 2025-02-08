@@ -1,0 +1,226 @@
+import java.util.ArrayList;
+import java.util.List;
+class Player {
+    private String name;
+    private int health;
+    private int experience;
+    private List<String> inventory;
+
+    public Player(String name) {
+        this.name = name;
+        this.health = 100;
+        this.experience = 0;
+        this.inventory = new ArrayList<>();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getHealth() {
+        return health;
+    }
+
+    public int getExperience() {
+        return experience;
+    }
+
+    public void reduceHealth(int damage) {
+        health -= damage;
+    }
+
+    public void increaseHealth(int amount) {
+        health += amount;
+    }
+
+    public void addExperience(int amount) {
+        experience += amount;
+    }
+
+    public void addItem(String item) {
+        inventory.add(item);
+        System.out.println(name + " picked up " + item + ". Inventory: " + inventory);
+    }
+
+    public void displayStatus() {
+        System.out.println("Player status: Health = " + health + ", Experience = " + experience);
+    }
+}
+
+
+
+
+class Enemy {
+    private String type;
+    private int damage;
+    private int experienceReward;
+
+    public Enemy(String type, int damage, int experienceReward) {
+        this.type = type;
+        this.damage = damage;
+        this.experienceReward = experienceReward;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public int getDamage() {
+        return damage;
+    }
+
+    public int getExperienceReward() {
+        return experienceReward;
+    }
+}
+
+
+
+
+class Item {
+    private String name;
+    private int healthBoost;
+    private int experienceBoost;
+
+    public Item(String name, int healthBoost, int experienceBoost) {
+        this.name = name;
+        this.healthBoost = healthBoost;
+        this.experienceBoost = experienceBoost;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getHealthBoost() {
+        return healthBoost;
+    }
+
+    public int getExperienceBoost() {
+        return experienceBoost;
+    }
+}
+
+
+
+
+
+import java.util.ArrayList;
+import java.util.List;
+
+class GameLevelManager {
+    private int level;
+
+    public GameLevelManager() {
+        this.level = 1;
+    }
+
+    public int getCurrentLevel() {
+        return level;
+    }
+
+    public void advanceLevel() {
+        level++;
+        System.out.println("Advancing to level " + level);
+    }
+
+    public List<Enemy> getEnemiesForLevel() {
+        List<Enemy> enemies = new ArrayList<>();
+        switch (level) {
+            case 1 -> {
+                enemies.add(new Enemy("Skeleton", 10, 20));
+                enemies.add(new Enemy("Zombie", 15, 30));
+            }
+            case 2 -> enemies.add(new Enemy("Vampire", 25, 50));
+            case 3 -> {
+                enemies.add(new Enemy("Vampire", 25, 50));
+                enemies.add(new Enemy("Zombie", 15, 30));
+            }
+        }
+        return enemies;
+    }
+
+    public List<Item> getItemsForLevel() {
+        List<Item> items = new ArrayList<>();
+        switch (level) {
+            case 1 -> {
+                items.add(new Item("Gold Coin", 0, 5));
+                items.add(new Item("Health Elixir", 20, 0));
+            }
+            case 2 -> items.add(new Item("Magic Scroll", 0, 15));
+            case 3 -> {
+                items.add(new Item("Health Elixir", 20, 0));
+                items.add(new Item("Gold Coin", 0, 5));
+            }
+        }
+        return items;
+    }
+}
+
+
+
+import java.util.List;
+
+public class RefactoredAdventureGame {
+    private Player player;
+    private GameLevelManager levelManager;
+
+    public RefactoredAdventureGame() {
+        this.player = new Player("Adventurer");
+        this.levelManager = new GameLevelManager();
+    }
+
+    public void fightEnemy(Enemy enemy) {
+        System.out.println(player.getName() + " engages in combat with " + enemy.getType() + "!");
+        player.reduceHealth(enemy.getDamage());
+        player.addExperience(enemy.getExperienceReward());
+        player.displayStatus();
+    }
+
+    public void pickUpItem(Item item) {
+        System.out.println(player.getName() + " picks up " + item.getName() + ".");
+        player.increaseHealth(item.getHealthBoost());
+        player.addExperience(item.getExperienceBoost());
+        player.displayStatus();
+    }
+
+    public void playGame() {
+        while (levelManager.getCurrentLevel() <= 3 && player.getHealth() > 0) {
+            System.out.println("=== Level " + levelManager.getCurrentLevel() + " ===");
+            List<Enemy> enemies = levelManager.getEnemiesForLevel();
+            List<Item> items = levelManager.getItemsForLevel();
+
+            for (Enemy enemy : enemies) {
+                if (player.getHealth() > 0) {
+                    fightEnemy(enemy);
+                }
+            }
+
+            for (Item item : items) {
+                if (player.getHealth() > 0) {
+                    pickUpItem(item);
+                }
+            }
+
+            if (player.getHealth() > 0 && levelManager.getCurrentLevel() < 3) {
+                levelManager.advanceLevel();
+            }
+        }
+
+        if (player.getHealth() <= 0) {
+            System.out.println(player.getName() + " has perished. Game Over.");
+        } else {
+            System.out.println("Congratulations, " + player.getName() + "! You completed the adventure with "
+                    + player.getExperience() + " experience points!");
+        }
+    }
+
+    public static void main(String[] args) {
+        RefactoredAdventureGame game = new RefactoredAdventureGame();
+        game.playGame();
+    }
+}
+
+
+
+
